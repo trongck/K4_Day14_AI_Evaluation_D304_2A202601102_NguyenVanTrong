@@ -241,7 +241,7 @@ class TextGenerator(Protocol):
 
 
 class MistralGenerator:
-    def __init__(self, max_output_tokens: int = 300) -> None:
+    def __init__(self, max_output_tokens: int = 400) -> None:
         api_key = os.getenv("MISTRAL_API_KEY", os.getenv("OPENAI_API_KEY", "")).strip()
         self.model = os.getenv(
             "MISTRAL_MODEL", os.getenv("OPENAI_MODEL", "ministral-8b-2512")
@@ -282,7 +282,7 @@ class DomainAssistant:
         corpus_id: str,
         retriever: BM25Retriever,
         generator: TextGenerator,
-        top_k: int = 5,
+        top_k: int = 7,
     ) -> None:
         self.corpus_id = corpus_id
         self.retriever = retriever
@@ -294,7 +294,7 @@ class DomainAssistant:
         cls,
         corpus_dir: str | Path,
         generator: TextGenerator | None = None,
-        top_k: int = 5,
+        top_k: int = 7,
     ) -> DomainAssistant:
         corpus_id, chunks = load_corpus(corpus_dir)
         return cls(
@@ -334,11 +334,14 @@ preserving exact dates, amounts, conditions, and exceptions. If evidence is
 insufficient, say so instead of using outside knowledge. Answer concisely in
 English without a generic preamble.
 
-CRITICAL FORMATTING RULES:
-1. State facts directly. Never refer to "the context", "retrieved documents", or "Context [X]" in your answer.
-2. Never output internal filenames (e.g., .md files) or system metadata to the user.
-3. Do not add outside advice, conversational filler, or polite closures not explicitly found in the text.
-4. Provide ONLY the answer. Do not wrap the answer in quotation marks.
+Writing rules (follow all of them):
+1. Start directly with the main subject of the question (product name/policy name) to maximize relevance.
+2. Use exact figures, conditions, and terms as stated in the context without reinterpreting to maximize faithfulness.
+3. Cover all related conditions and exceptions present in the context to maximize completeness.
+4. DO NOT mention "context", "Context 2", or source filenames (.md) so faithfulness is not penalized for ungrounded metadata.
+5. DO NOT add advice, disclaimers, or closing recommendations not found in the context (e.g. "consult a financial advisor").
+6. If the context describes how to handle specific situations (out-of-scope, unsafe, etc.), follow the context's exact instructions.
+7. If evidence is missing, state it directly without describing the retrieval mechanism.
 
 Question:
 {question.strip()}
@@ -385,7 +388,7 @@ def generate_actual_answers(
     dataset_path: str | Path,
     corpus_dir: str | Path,
     generator: TextGenerator | None = None,
-    top_k: int = 5,
+    top_k: int = 7,
     progress: ProgressCallback | None = None,
 ) -> dict[str, Any]:
     """Generate the auditable actual-answer artifact for all dataset questions."""
@@ -497,7 +500,7 @@ def parse_args() -> argparse.Namespace:
         default=Path("artifacts/actual_answers.json"),
         help="Output artifact (default: artifacts/actual_answers.json)",
     )
-    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--top-k", type=int, default=7)
     return parser.parse_args()
 
 

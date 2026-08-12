@@ -282,7 +282,7 @@ class DomainAssistant:
         corpus_id: str,
         retriever: BM25Retriever,
         generator: TextGenerator,
-        top_k: int = 7,
+        top_k: int = 5,
     ) -> None:
         self.corpus_id = corpus_id
         self.retriever = retriever
@@ -294,7 +294,7 @@ class DomainAssistant:
         cls,
         corpus_dir: str | Path,
         generator: TextGenerator | None = None,
-        top_k: int = 7,
+        top_k: int = 5,
     ) -> DomainAssistant:
         corpus_id, chunks = load_corpus(corpus_dir)
         return cls(
@@ -338,10 +338,10 @@ Writing rules (follow all of them):
 1. Start directly with the main subject of the question (product name/policy name) to maximize relevance.
 2. Use exact figures, conditions, and terms as stated in the context without reinterpreting to maximize faithfulness.
 3. Cover all related conditions and exceptions present in the context to maximize completeness.
-4. DO NOT mention "context", "Context 2", or source filenames (.md) so faithfulness is not penalized for ungrounded metadata.
-5. DO NOT add advice, disclaimers, or closing recommendations not found in the context (e.g. "consult a financial advisor").
+4. STRICTLY FORBIDDEN: Do NOT use words like "context", "contexts", "retrieved", "provided information", "document", or filenames (.md).
+5. DO NOT add advice, disclaimers, or closing recommendations not found in the context (e.g., "consult a financial advisor").
 6. If the context describes how to handle specific situations (out-of-scope, unsafe, etc.), follow the context's exact instructions.
-7. If evidence is missing, state it directly without describing the retrieval mechanism.
+7. If evidence is missing, simply state "No information is available for [topic]" without explaining retrieval.
 
 Question:
 {question.strip()}
@@ -388,7 +388,7 @@ def generate_actual_answers(
     dataset_path: str | Path,
     corpus_dir: str | Path,
     generator: TextGenerator | None = None,
-    top_k: int = 7,
+    top_k: int = 5,
     progress: ProgressCallback | None = None,
 ) -> dict[str, Any]:
     """Generate the auditable actual-answer artifact for all dataset questions."""
@@ -500,7 +500,7 @@ def parse_args() -> argparse.Namespace:
         default=Path("artifacts/actual_answers.json"),
         help="Output artifact (default: artifacts/actual_answers.json)",
     )
-    parser.add_argument("--top-k", type=int, default=7)
+    parser.add_argument("--top-k", type=int, default=5)
     return parser.parse_args()
 
 

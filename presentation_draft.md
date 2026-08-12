@@ -11,6 +11,18 @@
 
 ---
 
+### 🎙️ ĐOẠN VĂN MẪU ĐỌC DEMO THUYẾT TRÌNH (1 PHÚT)
+
+> *"Kính chào Thầy Cô và các bạn. Hôm nay em xin trình bày đề tài **AI Evaluation & Benchmarking Pipeline** dành cho Trợ lý ảo OrbitTech.*
+>
+> *Thay vì đánh giá cảm tính, em đã xây dựng bộ dữ liệu **Golden Dataset 20 QA Pairs** phân tầng kết hợp với bộ **5 chỉ số RAGAS** để đo lường tự động. Kết quả benchmark ghi nhận khâu **Retrieval** hoạt động rất tốt với Precision đạt 91.3%, nhưng khâu **Generation** lại là điểm nghẽn do LLM có thói quen trả lời dài dòng và rò rỉ metadata nội bộ.*
+>
+> *Bằng phương pháp **5 Whys**, em đã tối ưu khâu Retrieval bằng cách nâng `top_k` lên 7—giúp kéo đúng tài liệu bị sót và đưa Context Recall của ca M04 lên 1.0 tuyệt đối. Đồng thời, em thiết lập **7 quy tắc System Prompt** để triệt tiêu hoàn toàn các lỗi rò rỉ từ rác.*
+>
+> *Đặc biệt, em đã hoàn thành cả 2 bài tập Bonus: triển khai Reranker giúp tăng Context Precision thêm 11.7% và phát triển **Web Application RAG Evaluation Portal** phục vụ kiểm thử trực quan. Toàn bộ codebase đã pass **42/42 Pytest** và sẵn sàng bàn giao. Em xin chân thành cảm ơn!"*
+
+---
+
 ## 🖥️ NỘI DUNG TRÌNH CHIẾU SLIDE & KỊCH BẢN THUYẾT MINH CHI TIẾT
 
 ```mermaid
@@ -71,13 +83,6 @@ gantt
   - Chuẩn hóa toàn bộ câu hỏi và đáp án mẫu bằng tiếng Anh để tối ưu token matching.
   - Pass 100% kiểm định `validate_golden_dataset.py`.
 
-#### 🎙️ Lời nói thuyết minh chi tiết (Word-for-Word Script):
-> *"Để đánh giá một cách công bằng và toàn diện, bước đầu tiên em thực hiện là thiết kế bộ **Golden Dataset gồm 20 QA Pairs** tuân thủ phương pháp Phân tầng (Stratified Sampling).*
->
-> *Dataset bao gồm 5 câu hỏi Dễ, 7 câu Trung bình, 5 câu Khó và đặc biệt là 3 câu Tấn công (Adversarial) để kiểm tra độ 'lì' của mô hình trước các bẫy như Prompt Injection hay Giả định sai.*
->
-> *Tất cả 20 câu hỏi đều có bằng chứng trích dẫn rõ ràng từ các tài liệu Markdown gốc trong store, được chuẩn hóa tiếng Anh để phục vụ việc tính toán từ vựng chính xác tuyệt đối."*
-
 ---
 
 ### SLIDE 3: BỘ KHUNG ĐÁNH GIÁ 5 METRICS & KẾT QUẢ BENCHMARK SƠ BỘ
@@ -94,13 +99,6 @@ gantt
   - **Pass Rate tổng thể**: `45.0%` (9 / 20 câu đạt chuẩn Overall $\ge 0.60$ & Faithfulness $\ge 0.50$).
   - **Context Recall**: `0.877` | **Context Precision**: `0.913` (Retrieval hoạt động rất tốt).
   - **Faithfulness**: `0.575` | **Relevance**: `0.567` | **Completeness**: `0.704` (Generation kéo điểm xuống).
-
-#### 🎙️ Lời nói thuyết minh chi tiết (Word-for-Word Script):
-> *"Trên nền tảng dataset này, em áp dụng bộ 5 chỉ số RAGAS để 'cắt lớp' hiệu năng của hệ thống.*
->
-> *Kết quả benchmark ban đầu ghi nhận Overall Pass Rate đạt **45.0%**.*
->
-> *Khi phân tích sâu vào từng chỉ số, ta thấy một phát hiện rất thú vị: Khâu **Retrieval** của hệ thống hoạt động cực kỳ xuất sắc với Precision đạt 91.3% và Recall đạt 87.7%. Tuy nhiên, khâu **Generation** của LLM Mistral lại là điểm nghẽn kéo điểm số xuống, cụ thể Faithfulness chỉ đạt 57.5% và Relevance đạt 56.7%. Lý do chính là LLM có bản năng 'thích nói nhiều' và tự ý thêm thắt các từ rác ngoài tài liệu."*
 
 ---
 
@@ -121,15 +119,6 @@ gantt
     3. Cấm rò rỉ tên file nội bộ `.md`.
     4. Cấm đưa ra lời khuyên tài chính/pháp lý ngoài tài liệu.
   - 🛠️ **Cấu hình Parameter**: Tăng `max_output_tokens` lên **400** chống cắt cụt văn bản.
-
-#### 🎙️ Lời nói thuyết minh chi tiết (Word-for-Word Script):
-> *"Để giải quyết triệt để điểm nghẽn này mà không làm 'bóp méo' thước đo chấm điểm, em đã áp dụng phương pháp Phân tích 5 Whys.*
->
-> *Ví dụ ở case M04 về điều kiện loại trừ bảo hành, lý do điểm Recall ban đầu chỉ đạt 0.292 là do cấu hình `top_k=5` đã vô tình bỏ sót chunk thông tin nằm ở vị trí số 6.*
->
-> *Em đã tiến hành kiểm chứng thực nghiệm bằng cách nâng `top_k` lên 7 trên chính bộ BM25Retriever thật. Kết quả là hệ thống đã lôi được đúng đoạn văn bản bị thiếu, nâng điểm Recall của ca này lên 1.0 tuyệt đối.*
->
-> *Đồng thời, em thiết lập bộ **7 Quy tắc Prompt nghiêm ngặt** trong `domain_assistant.py`, cấm LLM nhắc đến các cụm từ nội bộ như 'Context 2' hay tên file '.md', giúp triệt tiêu hoàn toàn các lỗi Hallucination vô ý."*
 
 ---
 
@@ -153,15 +142,6 @@ Context Precision : 0.796  ===>  0.913  (+0.117 / +11.7%)  [TĂNG MẠNH]
 Context Recall    : 0.664  ===>  0.664  (+0.000 / 0.0%)    [GIỮ NGUYÊN BẢO BẢO]
 ```
 
-  - **Kết luận khoa học**: Reranking cải thiện thứ hạng xuất hiện của bằng chứng đúng (Precision) mà không làm thay đổi hay mất đi tập tài liệu hợp (Recall).
-
-#### 🎙️ Lời nói thuyết minh chi tiết (Word-for-Word Script):
-> *"Bên cạnh các bài tập bắt buộc, em đã hoàn thành trọn vẹn cả 2 bài tập Bonus để đạt thêm 15 điểm tối đa:*
->
-> *Ở bài 3.4, em lập ma trận so sánh giữa RAGAS và TruLens, chỉ ra rằng RAGAS phù hợp nhất làm 'Quality Gate' trong pipeline CI/CD nhờ tốc độ và tính khắt khe, còn TruLens phù hợp cho việc theo dõi trên môi trường Production.*
->
-> *Ở bài 3.5, em lập trình hàm Reranker `rerank_by_overlap()`. Kết quả thực nghiệm trên 5 traces chứng minh Reranking giúp đẩy điểm Context Precision tăng thêm 11.7% mà giữ nguyên tuyệt đối chỉ số Context Recall."*
-
 ---
 
 ### SLIDE 6: DEMO GIAO DIỆN RAG EVALUATION PORTAL & KẾT LUẬN
@@ -178,15 +158,6 @@ Context Recall    : 0.664  ===>  0.664  (+0.000 / 0.0%)    [GIỮ NGUYÊN BẢO 
   - ✅ Pass `42 / 42` Pytest cases.
   - ✅ `golden_dataset.json` PASS Validator.
   - ✅ Đã đồng bộ đầy đủ báo cáo trong `exercises.md`, `reflection.md` và push 100% lên GitHub.
-
-#### 🎙️ Lời nói thuyết minh chi tiết (Word-for-Word Script):
-> *"Cuối cùng, để phục vụ công tác trực quan hóa và thử nghiệm trực tiếp, em đã phát triển một Web Application mang tên **RAG Evaluation & Diagnostics Portal** chạy trên nền FastAPI.*
->
-> *Giao diện cho phép người dùng đặt câu hỏi, xem câu trả lời của LLM, kiểm tra danh sách 7 context chunks và quan sát ngay biểu đồ Radar 5 chỉ số cùng lời giải thích chi tiết lý do tại sao đạt được số điểm đó.*
->
-> *Toàn bộ mã nguồn, các file báo cáo và bộ test 42/42 PASSED đã được commit và push lên GitHub.*
->
-> *Em xin chân thành cảm ơn Thầy/Cô đã lắng nghe và em rất mong nhận được những câu hỏi nhận xét từ Hội đồng!"*
 
 ---
 

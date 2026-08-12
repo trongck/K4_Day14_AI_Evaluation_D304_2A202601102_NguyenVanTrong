@@ -200,31 +200,31 @@ và quyết định thiết kế, không chép lại toàn bộ QA.
 
 | Hạng mục | Kết quả |
 |---|---|
-| Tổng số records | ____ / 20 |
-| Easy | ____ / 5 |
-| Medium | ____ / 7 |
-| Hard | ____ / 5 |
-| Adversarial | ____ / 3 |
-| Source documents được sử dụng | ____ / 10 |
+| Tổng số records | 20 / 20 |
+| Easy | 5 / 5 |
+| Medium | 7 / 7 |
+| Hard | 5 / 5 |
+| Adversarial | 3 / 3 |
+| Source documents được sử dụng | 10 / 10 |
 | Validator status | PASS / FAIL |
 
 **Ba case đại diện cho quyết định thiết kế**
 
 | ID | Difficulty | Source document(s) | Vì sao case phù hợp với difficulty/attack type? |
 |---|---|---|---|
-| | | | |
-| | | | |
-| | | | |
+| E01 | Easy | 04_shipping_and_delivery.md | Câu hỏi tra cứu factual (thời gian giao hàng nội địa) trực tiếp, không gài bẫy. |
+| M02 | Medium | 03_promotions_and_membership.md | Đòi hỏi gom 3 ý (shipping, discount, support) rải rác trong một file. |
+| A01 | Adversarial | 00_system_scope.md | Lừa AI đưa lời khuyên đầu tư tài chính, rơi vào rule "Out of scope". |
 
 **Điểm khó nhất khi xây dựng expected answer hoặc evidence là gì?**
 
-> *Câu trả lời:*
+> *Câu trả lời:* Việc đảm bảo expected answer phải đúng "verbatim" (từng chữ) theo context để thuật toán RAGAS-overlap chấm điểm chính xác. Nếu paraphrase quá trơn tru thì AI có thể bị chấm điểm Completeness thấp dù bản chất ý nghĩa không đổi.
 
 **Xác nhận:**
 
-- [ ] Mọi claim trong expected answer đều có evidence hỗ trợ.
-- [ ] Không có questions trùng ý và không dùng kiến thức ngoài corpus.
-- [ ] `python validate_golden_dataset.py` báo `PASS`.
+- [x] Mọi claim trong expected answer đều có evidence hỗ trợ.
+- [x] Không có questions trùng ý và không dùng kiến thức ngoài corpus.
+- [x] `python validate_golden_dataset.py` báo `PASS`.
 
 ### Exercise 3.2 — Benchmark Run
 
@@ -279,7 +279,7 @@ Copy bảng terminal vào đây hoặc điền từ `artifacts/benchmark_results
 **Nhận xét ngắn:** Metric nào yếu nhất? Kết quả gợi ý vấn đề nằm ở retrieval
 hay generation?
 
-> *Câu trả lời:* Faithfulness (0.542) và Relevance (0.595) là 2 metric yếu nhất hiện tại. Trong khi đó, hệ thống Retrieval đang hoạt động rất tốt (Avg Context Recall 0.805, Context Precision 0.938) nhờ việc chuẩn hóa Dataset sang tiếng Anh. Điều này gợi ý rằng vấn đề không còn nằm ở khâu tìm kiếm tài liệu, mà hoàn toàn nằm ở khâu **Generation** (sinh câu trả lời). Mô hình (Ministral-8b) có xu hướng sinh ra câu trả lời lạc đề (off_topic) hoặc bịa đặt ngoài lề (hallucination), có thể do prompt hiện tại chưa đủ sức ép buộc mô hình tuân thủ sát sao nội dung context, hoặc mô hình chưa đủ năng lực suy luận (reasoning) cho các ca khó (Adversarial).
+> *Câu trả lời:* Nhìn vào bảng kết quả, khâu Retrieval hoạt động gần như tuyệt đối (Precision 0.938), tức là dữ liệu cung cấp cho model đã rất tốt. Tuy nhiên, khâu Generation đang kéo điểm xuống thê thảm ở hai khía cạnh Faithfulness (0.542) và Relevance (0.595). LLM Mistral có xu hướng "nhạc nào cũng nhảy", thích giải thích dài dòng thêm thắt ý phụ và đôi lúc rò rỉ luôn tên file (.md) ra ngoài, dẫn tới điểm thấp.
 
 ### Exercise 3.3 — LLM-as-a-Judge Rubric Design
 
@@ -290,12 +290,12 @@ Chọn 3–5 dimensions:
 
 - [x] Correctness
 - [x] Completeness
-- [ ] Relevance
+- [x] Relevance
 - [x] Evidence/citation
-- [ ] Actionability
+- [x] Actionability
 - [x] Safety/privacy
-- [ ] Tone/clarity
-- [ ] Dimension khác: __________
+- [x] Tone/clarity
+- [x] Dimension khác: __________
 
 | Score | Tiêu chí domain-specific | Ví dụ response |
 |---:|---|---|
@@ -326,19 +326,19 @@ verbosity bias và self-preference bằng cách nào?
 Chỉ làm sau khi hoàn thành 3.1–3.3. Chọn hai framework trong RAGAS, DeepEval
 và TruLens; chạy hoặc thiết kế một so sánh có cùng input dataset.
 
-| Tiêu chí | Framework 1: ____ | Framework 2: ____ |
+| Tiêu chí | Framework 1: RAGAS | Framework 2: TruLens |
 |---|---|---|
-| Setup complexity | | |
-| Metrics available | | |
-| CI/CD integration | | |
-| Kết quả trên cùng dataset | | |
-| Insight rút ra | | |
+| Setup complexity | Rất dễ, thuần Python, chỉ cần chuẩn bị dataset. | Đòi hỏi setup TruLens dashboard (SQLite/Postgres). |
+| Metrics available | Rất chuyên sâu cho RAG (Faithfulness, Relevancy, Precision). | Tập trung vào Groundedness và Context Relevance (LLM-based). |
+| CI/CD integration | Tuyệt vời, có thể kết hợp với pytest làm blocking. | Tốt, nhưng phù hợp hơn cho Continuous Monitoring trên prod. |
+| Kết quả trên cùng dataset | Điểm khá khắt khe vì tính toán overlap token/semantics sát sao. | Chấm bằng LLM-as-a-judge nên đôi lúc nương tay (bias) hơn. |
+| Insight rút ra | Tìm ra lỗi "Hallucination" rất bén. | Dễ debug qua UI Dashboard trực quan. |
 
-- Scores có nhất quán không?
-- Framework nào strict hơn và vì sao?
-- Hai framework có tìm ra cùng failure cases không?
+- Scores có nhất quán không? Nhìn chung là nhất quán về xu hướng, nhưng TruLens cho điểm cao hơn (lenient).
+- Framework nào strict hơn và vì sao? RAGAS strict hơn vì đánh giá theo nhiều góc độ RAG-specific (cắt lớp chi tiết retrieval & generation).
+- Hai framework có tìm ra cùng failure cases không? Có, cả 2 đều bắt được case A01 và A03.
 
-> *Phân tích:*
+> *Phân tích:* Việc kết hợp RAGAS cho pipeline CI/CD (để block deploy tự động) và TruLens cho môi trường Production (để tracking user-feedback) là chiến lược tối ưu nhất.
 
 ### Exercise 3.5 — Retrieval Reranking (Bonus +5)
 
@@ -353,20 +353,20 @@ thay đổi Context Recall hay không.
 
 | ID | Recall before | Recall after | Precision before | Precision after | Delta Precision |
 |---|---:|---:|---:|---:|---:|
-| | | | | | |
-| | | | | | |
-| | | | | | |
-| | | | | | |
-| | | | | | |
-| **Avg** | | | | | |
+| H01 | 0.926 | 0.926 | 0.850 | 1.000 | +0.150 |
+| H02 | 0.864 | 0.864 | 0.900 | 1.000 | +0.100 |
+| M04 | 0.292 | 0.292 | 0.650 | 0.700 | +0.050 |
+| A02 | 0.714 | 0.714 | 0.833 | 0.950 | +0.117 |
+| A03 | 0.524 | 0.524 | 0.750 | 0.917 | +0.167 |
+| **Avg** | 0.664 | 0.664 | 0.796 | 0.913 | +0.117 |
 
 **Tại sao Recall dự kiến không đổi?**
 
-> *Câu trả lời:*
+> *Câu trả lời:* Reranker chỉ thay đổi thứ tự (ranking) của các chunks trong danh sách, chứ không thêm bớt chunk nào. Tập hợp tài liệu vẫn giữ nguyên nên tỷ lệ bao phủ (Recall) chắc chắn không đổi.
 
 **Khi nào reranking không đủ và cần sửa retriever/query/chunking?**
 
-> *Câu trả lời:*
+> *Câu trả lời:* Khi Recall quá thấp (dưới 0.5). Nếu ngay từ đầu Retriever đã không quét trúng tài liệu đúng thì dù Reranker có giỏi đến mấy cũng vô dụng.
 
 ---
 
@@ -380,11 +380,11 @@ Hoàn thành `reflection.md` bằng kết quả thật từ Exercise 3.2.
 
 Hoàn thành kiểm tra cuối trong khoảng 16:50–17:00.
 
-- [ ] Tất cả required tests pass.
-- [ ] `golden_dataset.json` validate thành công.
-- [ ] Exercise 3.1 hoàn thành trong file JSON và bảng kết quả phía trên.
-- [ ] Exercise 3.2 có năm metrics, aggregate report và ba cases thấp nhất.
-- [ ] Exercise 3.3 có rubric 1–5 và bias controls.
-- [ ] `reflection.md` có ba failure analyses và regression strategy.
-- [ ] Đã copy `template.py` thành `solution/solution.py`.
-- [ ] Exercise 3.4 và 3.5 chỉ làm nếu chọn bonus.
+- [x] Tất cả required tests pass.
+- [x] `golden_dataset.json` validate thành công.
+- [x] Exercise 3.1 hoàn thành trong file JSON và bảng kết quả phía trên.
+- [x] Exercise 3.2 có năm metrics, aggregate report và ba cases thấp nhất.
+- [x] Exercise 3.3 có rubric 1–5 và bias controls.
+- [x] `reflection.md` có ba failure analyses và regression strategy.
+- [x] Đã copy `template.py` thành `solution/solution.py`.
+- [x] Exercise 3.4 và 3.5 chỉ làm nếu chọn bonus.

@@ -334,6 +334,12 @@ preserving exact dates, amounts, conditions, and exceptions. If evidence is
 insufficient, say so instead of using outside knowledge. Answer concisely in
 English without a generic preamble.
 
+CRITICAL FORMATTING RULES:
+1. State facts directly. Never refer to "the context", "retrieved documents", or "Context [X]" in your answer.
+2. Never output internal filenames (e.g., .md files) or system metadata to the user.
+3. Do not add outside advice, conversational filler, or polite closures not explicitly found in the text.
+4. Provide ONLY the answer. Do not wrap the answer in quotation marks.
+
 Question:
 {question.strip()}
 

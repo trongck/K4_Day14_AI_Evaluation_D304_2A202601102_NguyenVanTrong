@@ -214,9 +214,7 @@ class BM25Retriever:
         occurrences: Counter[str] = Counter()
         diversified: list[tuple[float, Chunk]] = []
         for score, chunk in ranked:
-            adjusted = score * (
-                SOURCE_REPEAT_DECAY ** occurrences[chunk.source_doc]
-            )
+            adjusted = score * (SOURCE_REPEAT_DECAY ** occurrences[chunk.source_doc])
             occurrences[chunk.source_doc] += 1
             diversified.append((adjusted, chunk))
         diversified.sort(
@@ -242,27 +240,30 @@ class TextGenerator(Protocol):
     def generate(self, prompt: str) -> str: ...
 
 
-class OpenAIGenerator:
+class MistralGenerator:
     def __init__(self, max_output_tokens: int = 300) -> None:
-        api_key = os.getenv("OPENAI_API_KEY", "").strip()
-        self.model = os.getenv("OPENAI_MODEL", "").strip()
+        api_key = os.getenv("MISTRAL_API_KEY", os.getenv("OPENAI_API_KEY", "")).strip()
+        self.model = os.getenv(
+            "MISTRAL_MODEL", os.getenv("OPENAI_MODEL", "ministral-8b-2512")
+        ).strip()
         if not api_key:
-            raise RuntimeError("OPENAI_API_KEY is missing from .env")
-        if not self.model:
-            raise RuntimeError("OPENAI_MODEL is missing from .env")
-        self.client = OpenAI(api_key=api_key)
+            raise RuntimeError("MISTRAL_API_KEY is missing from .env")
+
+        self.client = OpenAI(api_key=api_key, base_url="https://api.mistral.ai/v1")
         self.max_output_tokens = max_output_tokens
 
     def generate(self, prompt: str) -> str:
-        response = self.client.responses.create(
+        # User requested 5s delay per request
+        time.sleep(5)
+        response = self.client.chat.completions.create(
             model=self.model,
-            input=prompt,
+            messages=[{"role": "user", "content": prompt}],
             temperature=0,
-            max_output_tokens=self.max_output_tokens,
+            max_tokens=self.max_output_tokens,
         )
-        answer = response.output_text.strip()
+        answer = response.choices[0].message.content.strip()
         if not answer:
-            raise RuntimeError("OpenAI returned an empty answer")
+            raise RuntimeError("Mistral returned an empty answer")
         return answer
 
 
@@ -299,7 +300,7 @@ class DomainAssistant:
         return cls(
             corpus_id,
             BM25Retriever(chunks),
-            generator if generator is not None else OpenAIGenerator(),
+            generator if generator is not None else MistralGenerator(),
             top_k,
         )
 
@@ -398,7 +399,9 @@ def generate_actual_answers(
             f"assistant corpus_id {assistant.corpus_id!r}"
         )
 
-    model = getattr(assistant.generator, "model", assistant.generator.__class__.__name__)
+    model = getattr(
+        assistant.generator, "model", assistant.generator.__class__.__name__
+    )
     total = len(questions)
     notify(
         f"Ready: {total} questions, {len(assistant.retriever.chunks)} chunks, "
@@ -508,7 +511,14 @@ def main() -> int:
             json.dumps(artifact, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
-    except (OSError, OpenAIError, TypeError, ValueError, RuntimeError) as exc:
+    except (
+        OSError,
+        OpenAIError,
+        TypeError,
+        ValueError,
+        RuntimeError,
+        Exception,
+    ) as exc:
         print(f"ERROR: {exc}")
         return 2
     print(f"Generated {len(artifact['answers'])} actual answers: {output}")

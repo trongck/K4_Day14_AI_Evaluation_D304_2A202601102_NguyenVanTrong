@@ -2,11 +2,12 @@
 
 ## 1. Evaluation Report Tổng Hợp
 - **Overall pass rate**: 45.0%
-- **Avg Context Recall**: 0.805 (Tốt, Retriever hoạt động hiệu quả nhờ đồng bộ ngôn ngữ)
-- **Avg Context Precision**: 0.938 (Rất tốt, ranking chính xác)
-- **Avg Faithfulness**: 0.542 (Yếu, model thêm thắt thông tin ngoài context)
-- **Avg Relevance**: 0.595 (Yếu, model trả lời dài dòng hoặc lạc đề)
-- **Failure type distribution**: `{'off_topic': 6, 'hallucination': 4, 'irrelevant': 1}`
+- **Avg Context Recall**: 0.877 (Tốt, Retriever hoạt động hiệu quả nhờ đồng bộ ngôn ngữ và top_k=7)
+- **Avg Context Precision**: 0.913 (Rất tốt, ranking chính xác)
+- **Avg Faithfulness**: 0.575 (Đã được nâng cao nhờ 7 quy tắc prompt)
+- **Avg Relevance**: 0.567 (Đã cải thiện)
+- **Avg Completeness**: 0.704 (Rất tốt)
+- **Failure type distribution**: `{'off_topic': 8, 'irrelevant': 1, 'hallucination': 2}`
 
 ---
 
